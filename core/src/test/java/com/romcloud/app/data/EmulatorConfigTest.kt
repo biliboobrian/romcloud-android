@@ -9,7 +9,7 @@ import java.io.File
 class EmulatorConfigTest {
 
     /** Fichier commun avec l'application Windows (copié dans les assets au build). */
-    private val config = EmulatorConfig.parse(File("../../desktop/src/renderer/emulator-config/${EmulatorConfig.ASSET}").readText())
+    private val config = EmulatorConfig.parse(File("emulator-config/${EmulatorConfig.ASSET}").readText())
 
     @Test
     fun `valeur d'Eden remplacee avec son default`() {

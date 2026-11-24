@@ -7,7 +7,7 @@
 // leur profile.json (type, versionName, versionCode). Résultats gardés dans pc-catalog-cache.json :
 // seuls les nouveaux fichiers sont lus.
 //
-// Usage : node android/scripts/pc-catalog.mjs   (Node 22.15 ou plus, pour zstd)
+// Usage : node scripts/pc-catalog.mjs   (Node 22.15 ou plus, pour zstd)
 import fs from 'node:fs';
 import path from 'node:path';
 import zlib from 'node:zlib';

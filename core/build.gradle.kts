@@ -29,10 +29,11 @@ android {
     buildFeatures {
         compose = true
     }
-    // Réglages des émulateurs externes (« Configurer … ») : même fichier que l'application Windows.
+    // Réglages des émulateurs externes (« Configurer … ») : copie du fichier de l'application Windows
+    // (dépôt romcloud-desktop, desktop/src/renderer/emulator-config).
     sourceSets {
         getByName("main") {
-            assets.srcDir("../../desktop/src/renderer/emulator-config")
+            assets.srcDir("emulator-config")
         }
     }
 }

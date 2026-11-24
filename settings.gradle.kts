@@ -22,5 +22,3 @@ include(":libretrodroid")
 include(":core")
 include(":app")
 include(":tv")
-// RomCloud PC : moteur des jeux PC (Winlator Cmod), application compagnon (targetSdk 28).
-include(":pc")

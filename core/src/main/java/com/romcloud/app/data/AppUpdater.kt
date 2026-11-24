@@ -23,8 +23,8 @@ import okhttp3.Request
  * l'application est comparée à la version installée ; si elle est plus récente, son APK (téléphone ou TV) est proposé et
  * installé par [ApkInstaller]. Une version compilée sur un PC (« 1.63.0-dev ») passe avant la version
  * publiée de même numéro ; les compilations de debug (signées autrement) ne sont pas vérifiées.
- * RomCloud PC (jeux PC, publié dans la même Release) : vérifié avant chaque lancement d'un jeu PC
- * ([companionUpdate]).
+ * RomCloud PC (jeux PC, publié dans les Releases du dépôt romcloud-pc) : vérifié avant chaque
+ * lancement d'un jeu PC ([companionUpdate]).
  */
 class AppUpdater(private val context: Context, private val api: ApiClient) {
 
@@ -83,17 +83,17 @@ class AppUpdater(private val context: Context, private val api: ApiClient) {
     /**
      * Release la plus récente contenant l'APK du paquet [packageName] (RomCloud, TV ou PC), si elle est
      * plus récente que [installed]. Les Releases ne contiennent que les applications modifiées depuis
-     * la précédente (voir .github/workflows/android.yml) : la dernière Release peut ne pas avoir d'APK.
+     * la précédente (voir .github/workflows/android.yml et celui de romcloud-pc) : la dernière Release peut ne pas avoir d'APK.
      */
     private fun latest(installed: String, packageName: String): Update? {
-        val request = Request.Builder().url(RELEASES)
+        val companion = packageName == COMPANION
+        val request = Request.Builder().url(releases(if (companion) PC_REPO else APP_REPO))
             .header("Accept", "application/vnd.github+json")
             .build()
         val body = api.http.newCall(request).execute().use { response ->
             if (!response.isSuccessful) return null
             response.body.string()
         }
-        val companion = packageName == COMPANION
         val (version, asset) = findApk(body) { version ->
             if (companion) companionApkName(version) else apkName(version, tv = packageName.endsWith(".tv"))
         } ?: return null
@@ -108,12 +108,12 @@ class AppUpdater(private val context: Context, private val api: ApiClient) {
             size = size,
             url = url,
         )
-        return Update(version, installed, apk, changes(installed, version))
+        return Update(version, installed, apk, changes(if (companion) PC_REPO else APP_REPO, installed, version))
     }
 
     /** Commits entre les tags des deux versions (comparaison GitHub) ; vide en cas d'échec. */
-    private fun changes(installed: String, latest: String): List<VersionChanges> = runCatching {
-        val request = Request.Builder().url("$COMPARE/v${baseVersion(installed)}...v$latest")
+    private fun changes(repo: String, installed: String, latest: String): List<VersionChanges> = runCatching {
+        val request = Request.Builder().url("$API/$repo/compare/v${baseVersion(installed)}...v$latest")
             .header("Accept", "application/vnd.github+json")
             .build()
         api.http.newCall(request).execute().use { response ->
@@ -124,10 +124,14 @@ class AppUpdater(private val context: Context, private val api: ApiClient) {
 
     companion object {
         private const val TAG = "AppUpdater"
-        /** Releases publiées, les plus récentes d'abord. */
-        private const val RELEASES = "https://api.github.com/repos/biliboobrian/romCloud/releases?per_page=30"
-        private const val COMPARE = "https://api.github.com/repos/biliboobrian/romCloud/compare"
-        /** RomCloud PC (Winlator.COMPANION), publié dans la même Release. */
+        private const val API = "https://api.github.com/repos"
+        /** Dépôt de RomCloud (téléphone et TV). */
+        private const val APP_REPO = "biliboobrian/romcloud-android"
+        /** Dépôt de RomCloud PC, versions indépendantes. */
+        private const val PC_REPO = "biliboobrian/romcloud-pc"
+        /** Releases publiées du dépôt [repo], les plus récentes d'abord. */
+        private fun releases(repo: String) = "$API/$repo/releases?per_page=30"
+        /** RomCloud PC (Winlator.COMPANION), publié dans le dépôt [PC_REPO]. */
         private const val COMPANION = "com.romcloud.wine"
         private val VERSION_SUFFIX = Regex(";\\s*v(\\d+(?:\\.\\d+)*)$")
 
@@ -206,7 +210,7 @@ class AppUpdater(private val context: Context, private val api: ApiClient) {
         internal fun apkName(version: String, tv: Boolean) =
             if (tv) "RomCloud-TV-$version.apk" else "RomCloud-$version.apk"
 
-        /** Nom de l'APK de RomCloud PC dans la Release (voir .github/workflows/android.yml). */
+        /** Nom de l'APK de RomCloud PC dans la Release (dépôt romcloud-pc, .github/workflows/release.yml). */
         internal fun companionApkName(version: String) = "RomCloud-PC-$version.apk"
     }
 }

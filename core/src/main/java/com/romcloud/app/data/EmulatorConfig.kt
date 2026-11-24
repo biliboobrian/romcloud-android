@@ -13,8 +13,9 @@ import kotlinx.serialization.json.jsonPrimitive
 
 /**
  * Réglages des émulateurs externes proposés par « Configurer … » (Eden, Dolphin) : emulator-config.json,
- * commun avec l'application Windows (desktop/src/renderer/emulator-config, copié dans les assets par
- * core/build.gradle.kts). Seuls les réglages et valeurs d'Android sont gardés.
+ * copie de celui de l'application Windows (dépôt romcloud-desktop, desktop/src/renderer/emulator-config),
+ * dans core/emulator-config, ajouté aux assets par core/build.gradle.kts. Seuls les réglages et
+ * valeurs d'Android sont gardés.
  */
 class EmulatorConfig private constructor(
     private val schemas: Map<String, Schema>,
